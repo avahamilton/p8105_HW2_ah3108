@@ -26,7 +26,7 @@ water_df = read_excel(path = "./data_hw2/HealthyHarborWaterWheelTotals2018-7-28.
 
 ```
 
-### Read and clean 2017/2018 precipitation data
+### Read in and clean 2017/2018 precipitation data
 
 ```{r}
 prec18 = read_excel(path = "./data_hw2/HealthyHarborWaterWheelTotals2018-7-28.xlsx", sheet = 3, range = "A2:B9") %>% 
@@ -38,10 +38,87 @@ prec17 = read_excel(path = "./data_hw2/HealthyHarborWaterWheelTotals2018-7-28.xl
   janitor::clean_names() %>% 
   mutate(year = 2017) %>% 
   view
-  
+
 precData = bind_rows(prec17, prec18) %>% 
-  mutate(month = month.name[month])
+  mutate(month = month.name[month]) %>% 
+  rename(inches_rain = total)
 
 
 ```
+
+
+Write stuff here about the water data.
+Be sure to note the number of observations in both resulting datasets, and give examples of key variables. For available data, what was the total precipitation in 2018? What was the median number of sports balls in a dumpster in 2017.
+
+# Problem 2
+
+### Read in and clean FiveThirtyEight pols-month data
+```{r message = FALSE}
+
+pols_df = read_csv(file = "./data_hw2/fivethirtyeight_datasets/pols-month.csv") %>% 
+  janitor::clean_names() %>% 
+  separate(col = mon, into = c("year", "month", "day")) %>%
+  mutate(year = as.integer(year),
+         month = as.integer(month),
+         month = month.name[month],
+         president = as.character(prez_dem),
+         president = recode(president, "1" = "dem", "0" = "gop")
+  ) %>% 
+  select(-c("prez_dem", "prez_gop", "day")) 
+head(pols_df)
+
+```
+
+
+### Read in and clean FiveThirtyEight snp data
+```{r message = FALSE}
+
+snp_df = read_csv(file = "./data_hw2/fivethirtyeight_datasets/snp.csv") %>% 
+  janitor::clean_names() %>% 
+  separate(col = date, int = c("month" ,"day", "year")) %>% 
+  mutate(year = as.integer(year),
+         month = as.integer(month),
+         month = month.name[month]) %>% 
+  rename(snp_close = close) %>% 
+  arrange(year, month) %>% 
+  select(year, month, snp_close)
+head(snp_df)
+
+```
+
+
+### Read in and clean FiveThirtyEight unemployment data
+```{r message = FALSE}
+
+unemploy_df = read_csv(file = "./data_hw2/fivethirtyeight_datasets/unemployment.csv")
+
+unemploy_long = pivot_longer(
+  unemploy_df,
+  Jan:Dec,
+  names_to = "month",
+  values_to = "unemployment")
+
+unemploy_long =   mutate(
+  unemploy_long,
+  month = match(month, month.abb),
+  month = month.name[month]) %>% 
+  rename(year = Year) %>%
+  arrange(year, month)
+
+head(unemploy_long)
+
+```
+
+### Joining FiveThirtyEight data
+
+```{r}
+
+pols_snp = left_join(pols_df, snp_df, by = c("year", "month"))
+
+all_538_df = left_join(pols_snp, unemploy_long, by = c("year", "month"))
+head(all_538_df)
+
+```
+
+
 
