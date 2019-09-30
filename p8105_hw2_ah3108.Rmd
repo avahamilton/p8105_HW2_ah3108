@@ -120,5 +120,31 @@ head(all_538_df)
 
 ```
 
+Write stuff here about data
 
+# Problem 3
+
+### read in and ### Read in and clean baby names data
+
+```{r message = FALSE}
+
+bn_df = read_csv("./data_hw2/Popular_Baby_Names.csv") %>% 
+  janitor::clean_names() %>% 
+  mutate(
+    gender = as.factor(gender),
+    childs_first_name = str_to_upper(childs_first_name),
+    childs_first_name = as.factor(childs_first_name),
+    ethnicity = as.factor(ethnicity),
+    ethnicity = fct_collapse(
+      ethnicity,
+      ASIAN_PI = c("ASIAN AND PACI", "ASIAN AND PACIFIC ISLANDER"),
+      BLACK_NH = c("BLACK NON HISP", "BLACK NON HISPANIC"),
+      WHITE_NH = c("WHITE NON HISP", "WHITE NON HISPANIC"),
+      HISPANIC = "HISPANIC")
+  ) %>% 
+ distinct() %>% 
+  view
+
+
+```
 
