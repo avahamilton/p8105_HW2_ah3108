@@ -3,13 +3,21 @@ title: "p8105_hw2_ah3108"
 author: "Ava Hamilton"
 date: "9/29/2019"
 output: github_document
+always_allow_html: yes
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-
 library(tidyverse)
 library(readxl)
+library(kableExtra)
+library(arsenal)
+
+knitr::opts_chunk$set(
+  fig.width = 10,
+  fig.asp = .6,
+  out.width = "90%"
+)
 
 ```
 
@@ -18,11 +26,12 @@ library(readxl)
 ### Read in and clean Mr. Trash data
 ```{r}
 
-water_df = read_excel(path = "./data_hw2/HealthyHarborWaterWheelTotals2018-7-28.xlsx", sheet = 1, range = "A2:N336") %>% 
+water_df = read_excel(path = "./data_hw2/Trash-Wheel-Collection-Totals-8-6-19.xlsx", sheet = 1, range = "A2:N336") %>% 
   janitor::clean_names() %>% 
   drop_na(dumpster) %>% 
-  mutate(sports_balls = as.integer(round(sports_balls, digits = 0))) %>% 
-  view
+  mutate(sports_balls = as.integer(round(sports_balls, digits = 0)))
+
+head(water_df)
 
 ```
 
@@ -43,6 +52,7 @@ precData = bind_rows(prec17, prec18) %>%
   mutate(month = month.name[month]) %>% 
   rename(inches_rain = total)
 
+head(precData)
 
 ```
 
@@ -124,7 +134,7 @@ Write stuff here about data
 
 # Problem 3
 
-### read in and ### Read in and clean baby names data
+### Read in and clean baby names data
 
 ```{r message = FALSE}
 
@@ -142,9 +152,64 @@ bn_df = read_csv("./data_hw2/Popular_Baby_Names.csv") %>%
       WHITE_NH = c("WHITE NON HISP", "WHITE NON HISPANIC"),
       HISPANIC = "HISPANIC")
   ) %>% 
+  rename(year = year_of_birth) %>% 
+ 
  distinct() %>% 
   view
 
+
+```
+### Creating Table 3.1: Rank of "Olivia" as a First Name, 2011-2016
+
+```{r}
+
+olivia_rank = filter(bn_df, childs_first_name == "OLIVIA") %>%
+  select(-c(gender, count, childs_first_name)) %>% 
+  arrange(year)
+
+olivia_table  = pivot_wider(olivia_rank,
+  names_from = year,
+  values_from = rank)
+
+kable(olivia_table,  caption = "Rank of 'Olivia', by Year and Race/Ethnicity", col.names = c("", 2011:2016)) %>%  
+  kable_styling(full_width = F) %>%
+  column_spec(1, bold = T, border_right = T) 
+
+
+```
+
+### Creating Table 3.2: Top First Boy Name 2011-2016
+
+```{r}
+boy_one = filter(bn_df, rank == 1 & gender == "MALE") %>% 
+  select(-c(gender, count, rank)) %>% 
+  arrange(year)
+
+boy_table = pivot_wider(boy_one,
+  names_from = year,
+  values_from = childs_first_name)
+
+
+kable(boy_table,  caption = "Top Ranked Boy Name from 2011-2016, by Race/Ethnicity", col.names = c("", 2011:2016)) %>%  
+  kable_styling(full_width = F) %>%
+  column_spec(1, bold = T, border_right = T) 
+```
+
+### Creating scatterplot of boy names 2016
+
+
+```{r}
+wboy_2016 = filter(bn_df, gender == "MALE" & year == 2016 & ethnicity == "WHITE_NH")
+
+wboy_2016 %>% 
+    ggplot() +
+  geom_point(aes(x = rank, y = count), size  = 0) +
+  geom_text(aes(rank, count, label = childs_first_name)) +
+  theme_minimal() +
+  scale_y_continuous(breaks = seq(0, 300, 50))
+
+
+#childs_first_name
 
 ```
 
