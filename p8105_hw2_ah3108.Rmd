@@ -16,7 +16,8 @@ library(arsenal)
 knitr::opts_chunk$set(
   fig.width = 10,
   fig.asp = .6,
-  out.width = "90%"
+  out.width = "90%",
+  options(scipen = 999)
 )
 
 ```
@@ -26,7 +27,7 @@ knitr::opts_chunk$set(
 ### Read in and clean Mr. Trash data
 ```{r}
 
-water_df = read_excel(path = "./data_hw2/Trash-Wheel-Collection-Totals-8-6-19.xlsx", sheet = 1, range = "A2:N336") %>% 
+water_df = read_excel(path = "./data_hw2/Trash-Wheel-Collection-Totals-8-6-19.xlsx", sheet = 1, range = "A2:N406") %>% 
   janitor::clean_names() %>% 
   drop_na(dumpster) %>% 
   mutate(sports_balls = as.integer(round(sports_balls, digits = 0)))
@@ -38,27 +39,30 @@ head(water_df)
 ### Read in and clean 2017/2018 precipitation data
 
 ```{r}
-prec18 = read_excel(path = "./data_hw2/HealthyHarborWaterWheelTotals2018-7-28.xlsx", sheet = 3, range = "A2:B9") %>% 
+prec18 = read_excel(path = "./data_hw2/Trash-Wheel-Collection-Totals-8-6-19.xlsx", sheet = "2018 Precipitation", range = "A2:B14") %>% 
   janitor::clean_names() %>% 
   mutate(year = 2018) %>% 
   view
 
-prec17 = read_excel(path = "./data_hw2/HealthyHarborWaterWheelTotals2018-7-28.xlsx", sheet = 4, range = "A2:B14") %>% 
+prec17 = read_excel(path = "./data_hw2/Trash-Wheel-Collection-Totals-8-6-19.xlsx", sheet = "2017 Precipitation", range = "A2:B14") %>% 
   janitor::clean_names() %>% 
   mutate(year = 2017) %>% 
   view
 
-precData = bind_rows(prec17, prec18) %>% 
+prec_df = bind_rows(prec17, prec18) %>% 
   mutate(month = month.name[month]) %>% 
   rename(inches_rain = total)
 
-head(precData)
+head(prec_df)
 
 ```
 
+There were a total of `r nrow(water_df)` observations in the _Mr. Trash Wheel_ dataset, and a total of `r nrow(prec_df)` obersvations when combining the _Precipitation Data_ for 2017 and 2018.
 
-Write stuff here about the water data.
-Be sure to note the number of observations in both resulting datasets, and give examples of key variables. For available data, what was the total precipitation in 2018? What was the median number of sports balls in a dumpster in 2017.
+The collection of _Mr. Trash Wheel_ data spans from `r min(pull(water_df, year))` to `r max(pull(water_df, year))`. The average weight of a dumped dumbster was `r round(mean(pull(water_df, weight_tons)), 2)` tons and ranged from `r min(pull(water_df, weight_tons))` to `r max(pull(water_df, weight_tons))` tons. In that time, `r sum(pull(water_df, weight_tons))` tons of trash has powered `r round(sum(pull(water_df, homes_powered)), 2)` homes. Although I personally don't find "sports_balls" to be a **key** variable, the median number of sports balls found per dumpster dump in 2017 was `r median(pull(water_df, sports_balls)[pull(water_df,year) == 2017])`.
+
+_Precipitation data_ showed an average of `r round(mean(pull(prec_df, inches_rain)[pull(prec_df,year) == 2017]), 2)` inches of rain per month in 2017, with a total of `r round(sum(pull(prec_df, inches_rain)[pull(prec_df,year) == 2017]), 2)` inches, and `r round(mean(pull(prec_df, inches_rain)[pull(prec_df,year) == 2018]), 2)` per month in 2018 with a total of `r round(sum(pull(prec_df, inches_rain)[pull(prec_df,year) == 2018]), 2)` inches.
+
 
 # Problem 2
 
@@ -111,7 +115,8 @@ unemploy_long = pivot_longer(
 unemploy_long =   mutate(
   unemploy_long,
   month = match(month, month.abb),
-  month = month.name[month]) %>% 
+  month = month.name[month]) %>%
+  drop_na(unemployment) %>%  
   rename(year = Year) %>%
   arrange(year, month)
 
@@ -130,7 +135,17 @@ head(all_538_df)
 
 ```
 
-Write stuff here about data
+
+The _pols-month_ data gives the number of senators and congress representatives in the Democratic and Republican parties, as well as the party of the president each month from  `r first(pull(pols_df, month), order_by = c(pull(pols_df, year), pull(pols_df, month)))`, `r min(pull(pols_df,year))` to `r last(pull(pols_df, month), order_by = c(pull(pols_df), pull(pols_df, month)))`, `r max(pull(pols_df,year))`.
+
+The _snp_ data gives the closing Standard & Poors market index per date of observation (N = `r nrow(snp_df)`). After editing the data we have an SNP closing market index for the month and year from `r first(pull(snp_df, month), order_by = c(pull(snp_df, year), pull(snp_df, month)))`, `r min(pull(snp_df,year))` to `r last(pull(snp_df, month), order_by = c(pull(snp_df, year), pull(snp_df, month)))`, `r max(pull(snp_df,year))`.
+
+The _unemployment_ data gives the monthly percent of unemployment in the United States from `r first(pull(unemploy_long, month), order_by = c(pull(unemploy_long, year), pull(unemploy_long, month)))`, `r min(pull(unemploy_long,year))` to `r last(pull(unemploy_long, month), order_by = c(pull(unemploy_long), pull(unemploy_long, month)))`, `r max(pull(unemploy_long,year))`.
+
+Given the order in which they are combined we lose data from xx and have NA data in YY.
+
+Write a short paragraph about these datasets. Explain briefly what each dataset contained, and describe the resulting dataset (e.g. give the dimension, range of years, and names of key variables).
+
 
 # Problem 3
 
@@ -153,8 +168,8 @@ bn_df = read_csv("./data_hw2/Popular_Baby_Names.csv") %>%
       HISPANIC = "HISPANIC")
   ) %>% 
   rename(year = year_of_birth) %>% 
- 
- distinct() %>% 
+  
+  distinct() %>% 
   view
 
 
@@ -168,8 +183,8 @@ olivia_rank = filter(bn_df, childs_first_name == "OLIVIA") %>%
   arrange(year)
 
 olivia_table  = pivot_wider(olivia_rank,
-  names_from = year,
-  values_from = rank)
+                            names_from = year,
+                            values_from = rank)
 
 kable(olivia_table,  caption = "Rank of 'Olivia', by Year and Race/Ethnicity", col.names = c("", 2011:2016)) %>%  
   kable_styling(full_width = F) %>%
@@ -186,8 +201,8 @@ boy_one = filter(bn_df, rank == 1 & gender == "MALE") %>%
   arrange(year)
 
 boy_table = pivot_wider(boy_one,
-  names_from = year,
-  values_from = childs_first_name)
+                        names_from = year,
+                        values_from = childs_first_name)
 
 
 kable(boy_table,  caption = "Top Ranked Boy Name from 2011-2016, by Race/Ethnicity", col.names = c("", 2011:2016)) %>%  
@@ -195,18 +210,22 @@ kable(boy_table,  caption = "Top Ranked Boy Name from 2011-2016, by Race/Ethnici
   column_spec(1, bold = T, border_right = T) 
 ```
 
-### Creating scatterplot of boy names 2016
+### Creating scatterplot of boy names in 2016
 
 
 ```{r}
 wboy_2016 = filter(bn_df, gender == "MALE" & year == 2016 & ethnicity == "WHITE_NH")
 
 wboy_2016 %>% 
-    ggplot() +
-  geom_point(aes(x = rank, y = count), size  = 0) +
-  geom_text(aes(rank, count, label = childs_first_name)) +
-  theme_minimal() +
-  scale_y_continuous(breaks = seq(0, 300, 50))
+  ggplot() +
+  geom_point(aes(x = rank, y = count), size  = 0.5) +
+  geom_text(aes(rank, count, label = childs_first_name, angle = 5, hjust = -.1)) +
+  theme_bw() +
+  scale_y_continuous(breaks = seq(0, 300, 50)) +
+  scale_color_viridis_c() +
+  labs(title = "Ranked Non-Hispanic White Boy Names of 2016",
+       x = "Rank of Name",
+       y = "Number of Boys Born With Name")
 
 
 #childs_first_name
