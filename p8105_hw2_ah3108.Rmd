@@ -136,15 +136,14 @@ head(all_538_df)
 ```
 
 
-The _pols-month_ data gives the number of senators and congress representatives in the Democratic and Republican parties, as well as the party of the president each month from  `r first(pull(pols_df, month), order_by = c(pull(pols_df, year), pull(pols_df, month)))`, `r min(pull(pols_df,year))` to `r last(pull(pols_df, month), order_by = c(pull(pols_df), pull(pols_df, month)))`, `r max(pull(pols_df,year))`.
+The _pols-month_ data gives the number of senators and congress representatives in the Democratic and Republican parties, as well as the party of the president each month from  `r first(pull(pols_df, month), order_by = c(pull(pols_df, year), pull(pols_df, month)))`, `r min(pull(pols_df,year))` to `r last(pull(pols_df, month), order_by = c(pull(pols_df), pull(pols_df, month)))`, `r max(pull(pols_df,year))`,  (N = `r nrow(pols_df)`, `r ncol(pols_df)` variables).
 
-The _snp_ data gives the closing Standard & Poors market index per date of observation (N = `r nrow(snp_df)`). After editing the data we have an SNP closing market index for the month and year from `r first(pull(snp_df, month), order_by = c(pull(snp_df, year), pull(snp_df, month)))`, `r min(pull(snp_df,year))` to `r last(pull(snp_df, month), order_by = c(pull(snp_df, year), pull(snp_df, month)))`, `r max(pull(snp_df,year))`.
+The _snp_ data gives the closing Standard & Poors market index per date of observation (N = `r nrow(snp_df)`, `r ncol(snp_df)` variables). After editing the data we have an SNP closing market index for the month and year from `r first(pull(snp_df, month), order_by = c(pull(snp_df, year), pull(snp_df, month)))`, `r min(pull(snp_df,year))` to `r last(pull(snp_df, month), order_by = c(pull(snp_df, year), pull(snp_df, month)))`, `r max(pull(snp_df,year))`.
 
-The _unemployment_ data gives the monthly percent of unemployment in the United States from `r first(pull(unemploy_long, month), order_by = c(pull(unemploy_long, year), pull(unemploy_long, month)))`, `r min(pull(unemploy_long,year))` to `r last(pull(unemploy_long, month), order_by = c(pull(unemploy_long), pull(unemploy_long, month)))`, `r max(pull(unemploy_long,year))`.
+The _unemployment_ data gives the monthly percent of unemployment in the United States from `r first(pull(unemploy_long, month), order_by = c(pull(unemploy_long, year), pull(unemploy_long, month)))`, `r min(pull(unemploy_long,year))` to `r last(pull(unemploy_long, month), order_by = c(pull(unemploy_long), pull(unemploy_long, month)))`, `r max(pull(unemploy_long,year))`, (N = `r nrow(unemploy_long)`, `r ncol(unemploy_long)` variables).
 
-Given the order in which they are combined we lose data from xx and have NA data in YY.
+Given the order in which the three data sets are comibined into _all_538_df_, values from the variables in _snps_ and _unemployment_ data, "snp_close" and "unemployment" lost entries after `r last(pull(pols_df, month), order_by = c(pull(pols_df), pull(pols_df, month)))`, `r max(pull(pols_df,year))`. Missing values (NA) appear in  "snp_close" from `r first(pull(pols_df, month), order_by = c(pull(pols_df, year), pull(pols_df, month)))`, `r min(pull(pols_df,year))` to`r first(pull(snp_df, month), order_by = c(pull(snp_df, year), pull(snp_df, month)))`, `r min(pull(snp_df,year))`,  and in "unemployment" from  `r first(pull(pols_df, month), order_by = c(pull(pols_df, year), pull(pols_df, month)))`, `r min(pull(pols_df,year))` to `r first(pull(unemploy_long, month), order_by = c(pull(unemploy_long, year), pull(unemploy_long, month)))`, `r min(pull(unemploy_long,year))`. The number of observations in the variables from _pols_df_ stays is maintained (N = `r nrow(all_538_df)`, `r ncol(all_538_df)` variables). Lastly, as we the variables used to join were "month" and "year", we only have one set of each even though all three data sets had these variables.
 
-Write a short paragraph about these datasets. Explain briefly what each dataset contained, and describe the resulting dataset (e.g. give the dimension, range of years, and names of key variables).
 
 
 # Problem 3
@@ -219,7 +218,6 @@ wboy_2016 = filter(bn_df, gender == "MALE" & year == 2016 & ethnicity == "WHITE_
 wboy_2016 %>% 
   ggplot() +
   geom_point(aes(x = rank, y = count), size  = 0.5) +
-  geom_text(aes(rank, count, label = childs_first_name, angle = 5, hjust = -.1)) +
   theme_bw() +
   scale_y_continuous(breaks = seq(0, 300, 50)) +
   scale_color_viridis_c() +
@@ -227,8 +225,6 @@ wboy_2016 %>%
        x = "Rank of Name",
        y = "Number of Boys Born With Name")
 
-
-#childs_first_name
 
 ```
 
